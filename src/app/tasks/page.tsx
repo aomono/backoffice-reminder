@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
@@ -7,7 +9,7 @@ import { TaskTable } from "@/components/tasks/task-table";
 export default async function TasksPage() {
   const tasks = await prisma.recurringTask.findMany({
     include: { client: true },
-    orderBy: { createdAt: "desc" },
+    orderBy: { title: "asc" },
   });
 
   return (

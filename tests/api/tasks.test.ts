@@ -66,7 +66,7 @@ describe("Task API", () => {
     expect(data[1].client).toBeNull();
     expect(prisma.recurringTask.findMany).toHaveBeenCalledWith({
       include: { client: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: { title: "asc" },
     });
   });
 
