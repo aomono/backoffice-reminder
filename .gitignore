@@ -1,12 +1,14 @@
 # Environment & Secrets
 .env
 .env.*
+!.env.example
 *.pem
 *.key
 secrets/
 
 # Dependencies
 node_modules/
+.pnpm-store/
 
 # Build
 dist/
