@@ -1,4 +1,5 @@
 import { PrismaClient } from "../generated/prisma/client";
+import { PrismaNeon } from "@prisma/adapter-neon";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -6,9 +7,10 @@ const globalForPrisma = globalThis as unknown as {
 
 function getPrismaClient(): PrismaClient {
   if (!globalForPrisma.prisma) {
-    // Prisma v7 requires adapter configuration via prisma.config.ts
-    // The PrismaClient constructor picks up the datasource from there at runtime
-    globalForPrisma.prisma = new (PrismaClient as unknown as new () => PrismaClient)();
+    const adapter = new PrismaNeon({
+      connectionString: process.env.DATABASE_URL!,
+    });
+    globalForPrisma.prisma = new PrismaClient({ adapter } as never);
   }
   return globalForPrisma.prisma;
 }
