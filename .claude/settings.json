@@ -21,7 +21,9 @@
       "Bash(head *)",
       "Bash(tail *)",
       "Bash(wc *)",
-      "mcp__plugin_telegram_telegram__reply"
+      "mcp__plugin_telegram_telegram__reply",
+      "Bash",
+      "Write"
     ],
     "deny": [
       "Bash(rm -rf *)",
