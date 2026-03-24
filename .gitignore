@@ -1,0 +1,29 @@
+# Environment & Secrets
+.env
+.env.*
+*.pem
+*.key
+secrets/
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+.next/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug
+*.log
+npm-debug.log*
+
+# Test
+coverage/

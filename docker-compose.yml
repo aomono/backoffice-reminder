@@ -1,0 +1,11 @@
+services:
+  claude-dev:
+    build: .
+    container_name: claude-dev
+    volumes:
+      - ./:/workspace
+      - /home/ubuntu/.claude:/root/.claude
+      - /home/ubuntu/.claude.json:/root/.claude.json
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
