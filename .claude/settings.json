@@ -20,7 +20,8 @@
       "Bash(find *)",
       "Bash(head *)",
       "Bash(tail *)",
-      "Bash(wc *)"
+      "Bash(wc *)",
+      "mcp__plugin_telegram_telegram__reply"
     ],
     "deny": [
       "Bash(rm -rf *)",
