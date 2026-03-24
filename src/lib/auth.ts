@@ -27,6 +27,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
+      if (ALLOWED_EMAILS.length === 0) return true;
       return ALLOWED_EMAILS.includes(user.email);
     },
     async session({ session, user }) {
