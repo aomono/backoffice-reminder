@@ -55,7 +55,7 @@
 | title | String | タスク名 |
 | type | Enum | salary / contractor_payment / invoice / report |
 | clientId | String? | FK → Client（紐付かないタスクもある） |
-| frequency | String | "monthly" |
+| frequency | Enum | monthly（初期スコープでは monthly のみ） |
 | defaultDayOfMonth | Int? | 毎月の基準日 |
 | reminderDaysBefore | Int | 何日前にリマインドするか |
 | slackChannel | String? | Slack通知先チャンネル |
@@ -67,13 +67,16 @@
 | フィールド | 型 | 説明 |
 |---|---|---|
 | id | String (cuid) | PK |
-| clientId | String | FK → Client |
+| clientId | String? | FK → Client（nullable、給与等はクライアント紐付なし） |
+| recurringTaskId | String | FK → RecurringTask（対応する定期タスク） |
 | year | Int | 年 |
 | month | Int | 月 |
-| type | Enum | invoice / report |
-| deadlineDate | DateTime | 実際の締め日（クライアント指定） |
+| type | Enum | salary / contractor_payment / invoice / report |
+| deadlineDate | DateTime | 実際の締め日（クライアント指定 or defaultDayOfMonth） |
 | status | Enum | pending / reminded / completed |
 | createdAt | DateTime | 作成日時 |
+
+※ 給与・委託料支払い等のクライアント紐付かないタスクも MonthlyDeadline で月次の完了状態を管理する（clientId は nullable に変更）。
 
 ### Report（業務完了報告書）
 
@@ -84,9 +87,22 @@
 | monthlyDeadlineId | String? | FK → MonthlyDeadline |
 | period | String | 対象期間 |
 | workDescription | String | 作業内容 |
-| amount | Decimal | 金額 |
+| amount | Int | 金額（JPY、円単位） |
 | pdfUrl | String? | 生成済みPDFのURL |
 | status | Enum | draft / finalized |
+| createdAt | DateTime | 作成日時 |
+| updatedAt | DateTime | 更新日時 |
+
+### NotificationLog（通知ログ）
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| id | String (cuid) | PK |
+| recurringTaskId | String | FK → RecurringTask |
+| monthlyDeadlineId | String? | FK → MonthlyDeadline |
+| channel | Enum | slack / email |
+| message | String | 送信内容 |
+| sentAt | DateTime | 送信日時 |
 
 ---
 
@@ -213,4 +229,16 @@
 - NextAuth.js で Google OAuth 認証
 - 許可ユーザーはメールアドレスのホワイトリストで管理（2名）
 - API ルートは全て認証必須
+- Cron エンドポイントは `CRON_SECRET` ヘッダーで認証（Vercel が自動付与）
 - 環境変数で機密情報管理（.env）
+
+---
+
+## ダッシュボードのクエリ設計
+
+ダッシュボード「今月のタスク一覧」は以下のように構築する：
+
+1. 当月の `MonthlyDeadline` を全件取得（全タスク種別）
+2. `deadlineDate` 昇順、`status = pending` を優先してソート
+3. 各エントリに紐づく `RecurringTask` の情報（title, type）を JOIN
+4. `NotificationLog` から直近のリマインド履歴を取得して表示
