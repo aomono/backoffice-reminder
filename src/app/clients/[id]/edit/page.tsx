@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ClientForm } from "@/components/clients/client-form";
+import { DeadlineSection } from "@/components/clients/deadline-section";
 
 export default async function EditClientPage({
   params,
@@ -8,7 +9,18 @@ export default async function EditClientPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const client = await prisma.client.findUnique({ where: { id } });
+  const [client, recurringTasks] = await Promise.all([
+    prisma.client.findUnique({ where: { id } }),
+    prisma.recurringTask.findMany({
+      where: {
+        OR: [{ clientId: id }, { clientId: null }],
+        isActive: true,
+        type: { in: ["invoice", "report"] },
+      },
+      select: { id: true, title: true, type: true },
+      orderBy: { title: "asc" },
+    }),
+  ]);
 
   if (!client) {
     notFound();
@@ -27,6 +39,7 @@ export default async function EditClientPage({
           contractSummary: client.contractSummary,
         }}
       />
+      <DeadlineSection clientId={client.id} recurringTasks={recurringTasks} />
     </div>
   );
 }
