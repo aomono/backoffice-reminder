@@ -1,7 +1,5 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { prisma } from "./prisma";
 
 declare module "next-auth" {
   interface Session {
@@ -17,7 +15,11 @@ declare module "next-auth" {
 const ALLOWED_EMAILS = process.env.ALLOWED_EMAILS?.split(",") ?? [];
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  // Using JWT sessions instead of database sessions for now
+  // PrismaAdapter will be re-enabled once DB connectivity is confirmed
+  session: {
+    strategy: "jwt",
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -30,9 +32,15 @@ export const authOptions: NextAuthOptions = {
       if (ALLOWED_EMAILS.length === 0) return true;
       return ALLOWED_EMAILS.includes(user.email);
     },
-    async session({ session, user }) {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
+        session.user.id = token.id as string;
       }
       return session;
     },
